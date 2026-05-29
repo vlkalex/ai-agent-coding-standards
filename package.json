@@ -1,7 +1,7 @@
 {
   "name": "ai-agent-standards",
-  "version": "1.0.0",
-  "description": "Standards for getting AI agents to write clean React, React Native, and TypeScript code.",
+  "version": "1.1.0",
+  "description": "Stop AI agents writing slop. Opinionated coding standards for React, React Native, and TypeScript.",
   "bin": {
     "ai-agent-standards": "./bin/init.js"
   },
