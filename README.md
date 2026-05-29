@@ -17,6 +17,7 @@ Copies the standard files into your project's `docs/` folder. Then reference the
 Before implementing any feature, read:
 - docs/COMPONENT-GUIDELINES.md
 - docs/CODING-PRINCIPLES.md
+- docs/QUALITY-GATE.md
 ```
 
 Use `--force` to overwrite existing files.
@@ -27,9 +28,11 @@ Use `--force` to overwrite existing files.
 |------|---------------|
 | [component-guidelines.md](./react/component-guidelines.md) | React/React Native component architecture, reuse patterns, testing rules |
 | [coding-principles.md](./principles/coding-principles.md) | Four universal principles: think first, simplicity, surgical changes, goal-driven execution |
+| [quality-gate.md](./review/quality-gate.md) | Final review pass for type safety, API boundaries, i18n, tests, and local consistency |
 | [claude-md-guide.md](./agents/claude-md-guide.md) | How to write CLAUDE.md files that steer agents without micromanaging |
 | [agents-md-guide.md](./agents/agents-md-guide.md) | How to write AGENTS.md files for any AI coding tool |
 | [ticket-structure.md](./workflow/ticket-structure.md) | How to structure tickets so agents can execute without ambiguity |
+| [project-skill-template.md](./workflow/project-skill-template.md) | How to create focused repo/app/workflow skills for large codebases |
 
 ## Philosophy
 
@@ -46,6 +49,10 @@ These standards take a different approach:
 **Let the agent explore.** It knows the codebase better than your instructions file. Don't specify file paths. Describe what you want and let it figure out where to make the change.
 
 **Test what matters.** Not everything needs a test. But helpers and pure logic always do. Bug fixes always get a regression test first. Simple presentational components don't need tests.
+
+**Gate hard risks, not preferences.** A good review gate blocks unsafe types, generated-code edits, hardcoded i18n strings, unsafe backend states, and missing behavior tests. It does not force one app's harmless local style onto another.
+
+**Use project skills for big repos.** Keep AGENTS.md short. Put app-specific conventions, generated API workflows, review gates, and repeated task playbooks in focused skills that agents load only when relevant.
 
 ## See it in action
 

@@ -44,7 +44,8 @@ Claude Code uses these to verify its own work. If it doesn't know how to run tes
 
 Before implementing any feature, read:
 - docs/COMPONENT-GUIDELINES.md — component architecture rules
-- docs/CODING_STANDARDS.md — general TypeScript standards
+- docs/CODING-PRINCIPLES.md — general coding principles
+- docs/QUALITY-GATE.md — final review checklist for non-trivial changes
 
 Check existing components, hooks, and helpers before creating new ones.
 ```

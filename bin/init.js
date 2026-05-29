@@ -36,6 +36,11 @@ const files = [
     label: "Coding principles",
   },
   {
+    src: "review/quality-gate.md",
+    dest: "docs/QUALITY-GATE.md",
+    label: "Quality gate",
+  },
+  {
     src: "agents/claude-md-guide.md",
     dest: "docs/CLAUDE-MD-GUIDE.md",
     label: "CLAUDE.md writing guide",
@@ -49,6 +54,11 @@ const files = [
     src: "workflow/ticket-structure.md",
     dest: "docs/TICKET-STRUCTURE.md",
     label: "Ticket structure for agents",
+  },
+  {
+    src: "workflow/project-skill-template.md",
+    dest: "docs/PROJECT-SKILL-TEMPLATE.md",
+    label: "Project skill template",
   },
 ];
 
@@ -94,5 +104,6 @@ if (copied > 0) {
   console.log("  ## Coding Standards");
   console.log("  Before implementing any feature, read:");
   console.log("  - docs/COMPONENT-GUIDELINES.md");
-  console.log("  - docs/CODING-PRINCIPLES.md\n");
+  console.log("  - docs/CODING-PRINCIPLES.md");
+  console.log("  - docs/QUALITY-GATE.md\n");
 }
