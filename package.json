@@ -1,7 +1,7 @@
 {
   "name": "ai-agent-standards",
   "version": "1.0.0",
-  "description": "Practical coding standards for AI agents. Battle-tested across 5+ production TypeScript codebases.",
+  "description": "Standards for getting AI agents to write clean React, React Native, and TypeScript code.",
   "bin": {
     "ai-agent-standards": "./bin/init.js"
   },
