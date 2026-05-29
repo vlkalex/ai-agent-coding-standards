@@ -1,0 +1,38 @@
+{
+  "name": "ai-agent-standards",
+  "version": "1.0.0",
+  "description": "Practical coding standards for AI agents. Battle-tested across 5+ production TypeScript codebases.",
+  "bin": {
+    "ai-agent-standards": "./bin/init.js"
+  },
+  "keywords": [
+    "ai",
+    "coding-standards",
+    "claude",
+    "codex",
+    "cursor",
+    "agents",
+    "typescript",
+    "react",
+    "react-native",
+    "claude-code",
+    "agents-md",
+    "coding-guidelines"
+  ],
+  "author": "Alex Vlk",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vlkalex/ai-agent-coding-standards"
+  },
+  "homepage": "https://github.com/vlkalex/ai-agent-coding-standards#readme",
+  "files": [
+    "bin/",
+    "react/",
+    "agents/",
+    "principles/",
+    "workflow/",
+    "LICENSE",
+    "README.md"
+  ]
+}
