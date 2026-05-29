@@ -49,7 +49,7 @@ These standards take a different approach:
 
 ## See it in action
 
-[alexvlk.com](https://alexvlk.com) was built entirely by AI agents following these standards. The [source code](https://github.com/vlkalex/alexvlk-portfolio) shows what the output looks like: thin page composers, reusable UI primitives, separated data, proper types, no file over 50 lines.
+[alexvlk.com](https://alexvlk.com) is a simple portfolio site, but it was built entirely by AI agents following these standards. Even on a small project like this, the [source code](https://github.com/vlkalex/alexvlk-portfolio) shows the difference the guidelines make: thin page composers, reusable UI primitives, separated data, proper types. The architecture holds up regardless of project size.
 
 ## Who is this for
 
