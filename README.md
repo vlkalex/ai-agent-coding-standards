@@ -2,8 +2,6 @@
 
 Standards for getting AI agents to write cohesive, reuse-aware React, React Native, and TypeScript code without mechanical layering or speculative abstractions.
 
-Developed while building a mobile app with 3,500+ users, a SaaS platform, and several TypeScript projects. They address recurring problems: duplicated semantic components, inconsistent patterns, unverified reuse, and complexity moved into the wrong layer.
-
 ## Install
 
 ```bash
