@@ -10,8 +10,8 @@ if (HELP) {
   console.log(`
   ai-agent-standards init
 
-  Copy AI agent coding standards into your project.
-  Files are placed in docs/ and referenced from CLAUDE.md / AGENTS.md.
+  Copy AI agent coding standards and the reuse-first authoring skill into your project.
+  Standards are placed in docs/. The skill is placed in .agents/skills/ and .claude/skills/.
 
   Options:
     --force    Overwrite existing files
@@ -60,7 +60,40 @@ const files = [
     dest: "docs/PROJECT-SKILL-TEMPLATE.md",
     label: "Project skill template",
   },
+  {
+    src: "skills/reuse-first-authoring/SKILL.md",
+    dest: ".agents/skills/reuse-first-authoring/SKILL.md",
+    label: "Reuse-first authoring skill",
+  },
+  {
+    src: "skills/reuse-first-authoring/agents/openai.yaml",
+    dest: ".agents/skills/reuse-first-authoring/agents/openai.yaml",
+    label: "Reuse-first authoring skill metadata",
+  },
+  {
+    src: "skills/reuse-first-authoring/SKILL.md",
+    dest: ".claude/skills/reuse-first-authoring/SKILL.md",
+    label: "Reuse-first authoring skill for Claude Code",
+  },
+  {
+    src: "skills/reuse-first-authoring/agents/openai.yaml",
+    dest: ".claude/skills/reuse-first-authoring/agents/openai.yaml",
+    label: "Reuse-first authoring skill metadata for Claude Code",
+  },
 ];
+
+const missingSources = files.filter(
+  (file) => !fs.existsSync(path.join(packageRoot, file.src)),
+);
+
+if (missingSources.length > 0) {
+  console.error("\n  Installation failed: packaged sources are missing.\n");
+  for (const file of missingSources) {
+    console.error(`  ✗ Missing: ${file.src}`);
+  }
+  console.error("\n  Reinstall the package or report the packaging error.\n");
+  process.exit(1);
+}
 
 console.log("\n  AI Agent Coding Standards\n");
 console.log("  Copying standards into your project...\n");
@@ -75,11 +108,6 @@ let skipped = 0;
 for (const file of files) {
   const srcPath = path.join(packageRoot, file.src);
   const destPath = path.join(targetDir, file.dest);
-
-  if (!fs.existsSync(srcPath)) {
-    console.log(`  ⚠ Source not found: ${file.src}`);
-    continue;
-  }
 
   if (fs.existsSync(destPath) && !FORCE) {
     console.log(`  → Skipped: ${file.dest} (exists, use --force to overwrite)`);
@@ -101,9 +129,11 @@ console.log(`\n  Done. ${copied} copied, ${skipped} skipped.\n`);
 
 if (copied > 0) {
   console.log("  Add this to your CLAUDE.md or AGENTS.md:\n");
-  console.log("  ## Coding Standards");
-  console.log("  Before implementing any feature, read:");
-  console.log("  - docs/COMPONENT-GUIDELINES.md");
-  console.log("  - docs/CODING-PRINCIPLES.md");
-  console.log("  - docs/QUALITY-GATE.md\n");
+  console.log("  ## Reuse-first authoring");
+  console.log("  Before non-trivial implementation or refactoring, invoke the skill:");
+  console.log("  - Codex: `$reuse-first-authoring`");
+  console.log("  - Claude Code: `/reuse-first-authoring`");
+  console.log("  If project skills are not discovered automatically, read");
+  console.log("  `.agents/skills/reuse-first-authoring/SKILL.md` directly.");
+  console.log("  Load additional project skills only when their task or path trigger matches.\n");
 }

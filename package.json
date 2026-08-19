@@ -1,9 +1,12 @@
 {
   "name": "ai-agent-standards",
   "version": "1.1.0",
-  "description": "Stop AI agents writing slop. Opinionated coding standards for React, React Native, and TypeScript.",
+  "description": "Reuse-first coding standards and authoring workflows for React, React Native, and TypeScript agents.",
   "bin": {
     "ai-agent-standards": "./bin/init.js"
+  },
+  "scripts": {
+    "test": "node --test"
   },
   "keywords": [
     "ai",
@@ -32,6 +35,7 @@
     "agents/",
     "principles/",
     "review/",
+    "skills/",
     "workflow/",
     "LICENSE",
     "README.md"

@@ -5,12 +5,13 @@ Use this as a final review pass for non-trivial AI-written changes. For typo fix
 The goal is code that a human reviewer and a future AI agent can understand quickly:
 
 - strict types at API, form, route, storage, and generated-code boundaries
-- thin screens and routes, with behavior moved into named hooks, helpers, or focused components
+- cohesive screens, components, hooks, and helpers with responsibilities that are easy to name
+- reuse decisions backed by a responsibility, candidate search, and representative usage
 - local ownership: feature code stays near the workflow it serves
 - focused tests for behavior, mappings, permissions, transforms, and edge states
 - no broad rewrites, premature shared abstractions, or mechanical file splitting
 
-Small local duplication is acceptable when it keeps the workflow clear. Shared abstractions are justified only when they remove real repeated complexity.
+Small local duplication and private single-use extraction are acceptable when they keep a workflow clear. Shared abstractions need a stable contract, not just similar markup or a line-count reduction.
 
 ---
 
@@ -20,7 +21,7 @@ Follow the dominant local project pattern unless it violates a hard gate.
 
 Use this precedence when coding or reviewing:
 
-1. Hard gates in this document: type safety, runtime safety, generated-code boundaries, i18n, testability, backend-state handling, and clear maintainability.
+1. Hard gates in this document: type safety, runtime safety, generated-code boundaries, explicitly established canonical primitives, i18n, testability, and backend-state handling.
 2. App/package-specific conventions and nearby code that already handles the same workflow well.
 3. Shared project standards.
 4. Examples from other apps or projects as quality references, not mandatory style transplants.
@@ -30,10 +31,11 @@ Treat these as preferences unless they create a hard-gate issue:
 - translation access style when the surrounding file already uses a different local pattern
 - folder layout and component naming that is consistent in the app
 - small local duplication that keeps a workflow easier to read
-- wrapper/component choices where the app has its own established wrapper
+- reuse of domain components whose responsibilities only partially overlap
+- extraction and file placement when the touched code remains cohesive
 - equivalent helper shapes that are typed, tested, and locally understandable
 
-A local pattern becomes a review issue when it creates unsafe types, repeated complex workflow logic, weak backend-state handling, missing behavioral tests, or forces readers to open many unrelated files to understand one change.
+A local pattern becomes a review issue when it creates unsafe types, bypasses a stable canonical contract, repeats complex workflow logic, weakens backend-state handling, misses behavioral tests, or forces readers to open many unrelated files to understand one change.
 
 ---
 
@@ -56,19 +58,16 @@ A local pattern becomes a review issue when it creates unsafe types, repeated co
 - Mutation and API errors should use the app-level error/snackbar/logger pattern, not a raw lower-level dependency.
 - Render optional, empty, or impossible-looking backend states safely with an empty state, explicit `null`, or a typed helper that documents the invariant.
 
-### React Shape
+### Reuse Evidence And Canonical UI
 
-- Pages, screens, and routes should be thin. Move non-trivial workflow logic into named hooks, helpers, or focused child components.
-- Treat files around 200 lines as a review signal. Split when the file mixes responsibilities or is hard to scan.
-- Do not introduce 300+ line components, large render functions, or long inline ternary trees.
-- Extract multi-part conditions into named booleans before JSX or branching.
-- Extract repeated JSX combinations into local components before creating shared abstractions.
-- Keep `useEffect` bodies small. Move async work and event handlers into named functions.
-- Do not introduce global client state unless it is already the project's established pattern.
+- For non-trivial UI authoring, identify the semantic responsibility, plausible project candidates, a representative usage inspected, and the decision: `reuse`, `extend`, `feature-local`, or `shared`.
+- Search project-owned semantic components and feature/domain candidates before falling back to the approved vendor library or a lower-level platform primitive.
+- When the project explicitly establishes a canonical semantic primitive for the responsibility, use it. A deviation must identify a concrete semantic or behavioral gap.
+- Treat canonical status as a hard gate only when the project clearly documents the owner and its supported responsibility. A commonly used domain component is not canonical by default.
+- Preserve accessibility, interaction states, analytics, theming, and test conventions owned by a canonical primitive.
 
 ### UI And I18n
 
-- Use app wrappers and the project UI library before lower-level primitives when wrappers exist.
 - New user-facing strings go through the app's i18n system when the project has one.
 - Do not render empty strings just to satisfy required props. Make the prop optional or create the right component.
 - New interactive UI should use stable test IDs when the project has a test ID convention.
@@ -80,7 +79,31 @@ A local pattern becomes a review issue when it creates unsafe types, repeated co
 - Bug fixes should get a regression test that fails before the fix when practical.
 - Avoid placeholder tests that only assert a component renders.
 - Prefer small table-driven tests for mappings, state transitions, and validation cases.
-- When a test is not practical in the current change, call out the residual risk and keep the code split so it can be tested later.
+- When a test is not practical in the current change, call out the residual risk and keep the behavior isolated enough to test later.
+
+---
+
+## Contextual Review Signals
+
+These signals require judgment. They are prompts to inspect responsibilities, not automatic reasons to request changes.
+
+### Cohesion And Extraction
+
+- A screen or route may own screen-specific state, orchestration, handlers, derived values, and cohesive layout. It does not need to be a pass-through composer.
+- Extract a private component, function, or hook when naming a responsibility improves comprehension, testing, or change isolation.
+- Do not move unrelated concerns into one large hook merely to shorten a screen.
+- Do not split a cohesive workflow across pass-through files that readers must traverse together.
+- Treat a file around 200 lines as a review signal when the repository has no stronger local convention. Shorter code can still mix responsibilities; longer code can still be cohesive.
+- Extract multi-part conditions or long branches when a name makes the behavior easier to follow.
+- Do not introduce global client state unless it is already the project's established pattern or the new ownership need is justified.
+
+### Ownership And Abstraction
+
+- Evaluate domain reuse by semantic responsibility, behavior, data and permission assumptions, ownership, and likely change direction.
+- Similar markup is not enough to force two domain workflows through one component.
+- A feature-local private extraction may have one consumer. Keep it narrow rather than adding speculative variants.
+- Create a shared abstraction only when independent consumers need the same stable contract and shared ownership removes real repeated complexity.
+- Use `useMemo`, `useCallback`, and component memoization only for a specific cost or identity requirement. Do not add them as a blanket convention.
 
 ---
 
@@ -90,21 +113,26 @@ Request changes for:
 
 - new unsafe type escapes
 - generated-code edits or manual API code without a boundary reason
+- bypassing an explicitly established canonical semantic primitive without a concrete semantic or behavioral gap
 - hardcoded user-facing text in an i18n project
 - unsafe rendering of optional or empty backend data
-- large new/touched files that mix page, form, mutation, event handling, and rendering concerns
+- new or touched code that mixes page, form, mutation, event handling, and rendering responsibilities without a clear cohesive owner
 - missing focused tests for new behavior that can regress silently
+- non-trivial new or replacement UI with no reviewer-visible responsibility, candidate, representative-usage, or ownership-decision evidence
 
 Leave as a note or follow-up for:
 
 - older untouched code that violates the standard but is outside the task
 - small local duplication that keeps the current workflow easier to read
+- a cohesive screen, hook, or component whose line count merely crosses a guideline
+- a feature-local single-use extraction with a clear responsibility
 - cosmetic naming improvements that do not affect comprehension or safety
 - test gaps that cannot be closed in the current environment but are clearly reported
 
 Do not flag:
 
 - code that follows the dominant local style and does not violate a hard gate
+- domain components kept separate after their semantics or behavior were shown to differ
 - preference-only rewrites from one app style to another app style
 - broad cleanup outside the touched workflow
 
@@ -114,8 +142,10 @@ Do not flag:
 
 Search first instead of inventing:
 
-- project UI primitives and app wrappers
-- existing components, hooks, helpers, and domain utilities
+- explicitly established project semantic primitives and app wrappers
+- existing feature/domain components, hooks, helpers, and utilities
+- representative usages that demonstrate candidate behavior
+- the approved vendor UI library when project code does not own the responsibility
 - existing test ID conventions
 - feature toggle or rollout conventions
 - generated API clients, SDKs, types, and enums
@@ -128,10 +158,14 @@ Search first instead of inventing:
 Before handing back code, check:
 
 - Did I avoid new unsafe type escapes?
-- Did I reuse existing components, hooks, helpers, and generated clients where available?
+- Did I record the responsibility, candidates, representative usage, and `reuse` / `extend` / `feature-local` / `shared` decision for non-trivial UI authoring?
+- Did I use established canonical primitives, existing code, generated clients, and vendor components at the appropriate level?
+- If I bypassed a canonical primitive, did I identify the semantic or behavioral gap?
 - Are new strings translated and new controls covered by stable test IDs when the project expects them?
 - Is the touched code locally readable without opening many unrelated files?
-- Did I avoid creating a broad abstraction for one workflow?
+- Did I distinguish a private single-use extraction from a shared abstraction?
+- Did I review large files for mixed responsibilities without splitting them mechanically?
+- Is every memoization choice tied to a specific cost or identity requirement?
 - Are optional backend states safe?
 - Are behavior-bearing helpers, maps, permissions, transforms, effects, and mutations tested?
 - Did the relevant checks run, or is there a concrete environment blocker?

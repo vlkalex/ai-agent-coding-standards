@@ -1,72 +1,76 @@
 # Coding Principles for AI Agents
 
-Four principles that apply to every coding task. For trivial changes (typo fixes, one-liners), use judgment — not every change needs full rigor.
+Four principles that apply to every coding task. For trivial changes such as typo fixes, use judgment; the ceremony should match the risk.
 
-These are designed to be copied directly into your CLAUDE.md or AGENTS.md.
+These principles are designed to be referenced from `CLAUDE.md` or `AGENTS.md`. Keep the short trigger there and the detailed workflow here.
 
 ---
 
 ## 1. Think Before Coding
 
-Don't assume. Don't hide confusion. Surface tradeoffs.
+Do not assume or hide uncertainty. Surface tradeoffs that affect the result.
 
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them — don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+- State material assumptions explicitly.
+- If multiple interpretations would produce meaningfully different behavior, present them or ask.
+- If a simpler approach meets the requirement, say so.
+- When something blocks safe progress, name the missing information instead of guessing.
 
-## 2. Simplicity First
+## 2. Prefer Simple, Cohesive Code
 
-Minimum code that solves the problem. Nothing speculative.
+Write the minimum code that solves the requested problem, then keep each responsibility where it is easiest to understand.
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
+- Do not add speculative features, configurability, or error handling for states the system cannot produce.
+- Keep closely related state, behavior, and rendering together when separating them would make the workflow harder to follow.
+- Extract a private component, function, or hook when naming a responsibility improves readability, testing, or change isolation. Single use does not make that extraction wasteful.
+- Do not present a private single-use extraction as a reusable abstraction. Shared code needs a stable contract and evidence that independent consumers share the same responsibility.
+- Treat line count as a prompt to review cohesion, not as a reason to split code mechanically.
 
-The test: would a senior engineer say this is overcomplicated? If yes, simplify.
+The test: can a reviewer explain each unit's responsibility and follow the change without jumping through unrelated files?
 
-## 3. Surgical Changes
+## 3. Make Surgical Changes
 
-Touch only what you must. Clean up only your own mess.
+Touch only what the task requires and clean up only the consequences of your change.
 
 When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it — don't delete it.
 
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+- Do not reformat or refactor adjacent code without a task-related reason.
+- Follow safe local conventions, even when another style is also valid.
+- Mention unrelated problems instead of quietly expanding the change.
+- Remove imports, variables, files, or branches that your change made obsolete.
 
-The test: every changed line should trace directly to the task.
+The test: every changed line should trace to the requested outcome or to keeping that outcome correct and maintainable.
 
-## 4. Goal-Driven Execution
+## 4. Work Toward Verifiable Outcomes
 
-Define success criteria. Loop until verified.
+Translate the request into observable success criteria and keep iterating until they are verified.
 
-Transform tasks into verifiable goals:
-- "Add validation" becomes "write tests for invalid inputs, then make them pass"
-- "Fix the bug" becomes "write a test that reproduces it, then make it pass"
-- "Refactor X" becomes "ensure tests pass before and after"
+- "Add validation" becomes "cover the invalid inputs, then make those cases pass."
+- "Fix the bug" becomes "reproduce the failure, fix it, and add a regression check when practical."
+- "Refactor this" becomes "preserve externally visible behavior before and after the structural change."
 
-For multi-step tasks, state a brief plan:
-1. [Step] then verify: [check]
-2. [Step] then verify: [check]
-3. [Step] then verify: [check]
+For multi-step work, use a brief plan in which each step has a check. Report checks that failed, were skipped, or could not run.
 
 ---
 
-## Bonus: The Reuse Checklist
+## Reuse-First Authoring
 
-Before writing any new code, check:
+Before creating or replacing a component, hook, helper, or service, gather enough evidence to make a deliberate ownership decision:
 
-1. Does the project's UI library have this component?
-2. Does a component in `components/` already do this?
-3. Does a hook in `hooks/` already handle this logic?
-4. Does a helper in `helpers/` or `lib/utils/` already do this calculation?
-5. Only if all four are "no" — create something new.
+1. **Responsibility** — describe the semantic job and required behavior in one sentence. Do not describe only its appearance.
+2. **Candidates** — search project-owned semantic components, feature/domain code, hooks, helpers, and services that may already own that responsibility.
+3. **Representative usage** — inspect at least one real usage of the strongest candidate. Its name or screenshot alone does not prove compatibility.
+4. **Library fallback** — if project code does not cover the responsibility, check the project's approved vendor library before using a lower-level platform primitive or creating infrastructure.
+5. **Decision** — explicitly choose `reuse`, `extend`, `feature-local`, or `shared`.
 
-This single checklist prevents the #1 problem with AI-generated code: duplicate implementations of things that already exist in the codebase.
+Use the four decisions consistently:
+
+| Decision | Use when |
+|---|---|
+| `reuse` | An existing owner already matches the semantics and behavior. |
+| `extend` | The existing owner's responsibility is correct and a narrow, compatible capability belongs there. |
+| `feature-local` | The code serves one workflow or has feature-specific semantics. It may remain inline or be privately extracted. |
+| `shared` | Independent consumers need the same stable contract and a shared owner reduces real repeated complexity. |
+
+An explicitly documented canonical semantic primitive is a stable project contract. Use it when the responsibility matches. A deviation must identify the semantic or behavioral gap; visual preference or convenience is not enough.
+
+Domain components are contextual candidates, not automatic mandates. Reuse or extend them only when responsibilities, behavior, ownership, and likely change direction align. Similar markup alone is not evidence for a shared abstraction.

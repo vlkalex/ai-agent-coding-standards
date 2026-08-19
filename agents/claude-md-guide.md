@@ -1,100 +1,98 @@
 # How to Write Effective CLAUDE.md Files
 
-CLAUDE.md is Claude Code's project-level instruction file. It's read at the start of every session and shapes how Claude approaches your codebase. Similar in purpose to AGENTS.md but specifically for Claude Code's conventions.
+A task-oriented guide for repository maintainers using Claude Code. Keep `CLAUDE.md` as a concise routing layer: state the context and hard constraints Claude needs on every task, then trigger focused skills or references only when relevant.
 
-## CLAUDE.md vs AGENTS.md
+## CLAUDE.md And AGENTS.md
 
-If you use Claude Code exclusively, use CLAUDE.md. If you use multiple tools (Claude Code, Codex, Cursor), use AGENTS.md as the universal file and keep CLAUDE.md for Claude-specific settings.
+If the repository supports several coding agents, use one file as the source of truth for shared guidance and keep the other as a short pointer plus tool-specific instructions. Do not maintain two overlapping handbooks.
 
-Don't maintain both with overlapping content — pick one as the source of truth for coding guidelines and reference it from the other.
+Verify how the tools used by the project discover and scope instruction files. Do not assume nested-file or skill discovery behavior is identical across tools.
 
-## What goes in CLAUDE.md
+## Use Progressive Disclosure
 
-### Project context (always include)
+Separate guidance by how often it is needed:
+
+1. **`CLAUDE.md`** — brief product context, repository-wide hard constraints, triggers, and verification entry points.
+2. **Focused skill** — the required workflow and decision rules for one class of task.
+3. **On-demand reference** — detailed domain rules, generation steps, examples, or troubleshooting loaded by the workflow.
+4. **Code and configuration** — the source of truth for current behavior, commands, schemas, and APIs.
+
+The root file should route work, not duplicate every standard.
+
+## Minimal Template
 
 ```markdown
 # Project Name
 
-Brief description of the project. What it does, who uses it.
+One paragraph describing the product, its users, and the main correctness risk.
 
-## Tech stack
-- Frontend: React Native (Expo)
-- Backend: NestJS + GraphQL
-- Database: PostgreSQL with Prisma
-- Hosting: AWS
+## Terms
+
+- Define only domain terms whose ordinary meaning would mislead.
+
+## Reuse-first authoring
+
+- Before non-trivial implementation or refactoring, use `/reuse-first-authoring`.
+- If project skills are not discovered automatically, first read
+  `.claude/skills/reuse-first-authoring/SKILL.md`.
+- Load additional project skills only when their task or path trigger matches.
+
+## Hard constraints
+
+- Do not edit generated files; use the workflow documented by their owner.
+- Do not add dependencies without approval.
+
+## Verification
+
+- Use the commands defined by the affected package and CI configuration.
+- Report failed or unavailable checks.
 ```
 
-### Build and test commands (always include)
+Replace the placeholders with facts verified in the repository. Do not invent a build, test, code-generation, or release command to make the file look complete.
 
-```markdown
-## Development
+## What Belongs In CLAUDE.md
 
-npm run dev          # Start dev server
-npm run build        # Build for production
-npm test             # Run tests
-npm run lint         # Lint check
-```
+Include:
 
-Claude Code uses these to verify its own work. If it doesn't know how to run tests, it can't verify changes.
+- short product context and high-impact risks
+- a compact glossary when domain language is ambiguous
+- repository-wide safety and ownership constraints
+- task or path triggers for focused skills
+- verified build, test, lint, and type-check entry points
+- explicit areas where Claude must ask before making a change
 
-### Coding standards (reference, don't duplicate)
+A stable project contract can be a hard rule. For example, an explicitly established canonical semantic component may own accessibility, interaction, theming, and analytics for a responsibility. Context-dependent choices, such as whether two domain components should share an abstraction, belong in the focused authoring workflow.
 
-```markdown
-## Coding Standards
+## What Belongs In A Skill Or Reference
 
-Before implementing any feature, read:
-- docs/COMPONENT-GUIDELINES.md — component architecture rules
-- docs/CODING-PRINCIPLES.md — general coding principles
-- docs/QUALITY-GATE.md — final review checklist for non-trivial changes
+Move these out of the always-loaded file:
 
-Check existing components, hooks, and helpers before creating new ones.
-```
+- the component, hook, helper, and service discovery procedure
+- the `reuse`, `extend`, `feature-local`, or `shared` decision rubric
+- package-specific architecture and domain invariants
+- generated API, migration, release, or deployment workflows
+- detailed review checklists and failure branches
+- examples and representative usages
 
-### Project-specific rules
+The Claude Code installation lives at `.claude/skills/reuse-first-authoring/SKILL.md` and is directly invocable as `/reuse-first-authoring`. The same source is also installed under `.agents/skills/` for tools that discover the shared Agent Skills location.
 
-```markdown
-## Rules
+## Anti-Patterns
 
-- Use the existing HeroUI component library for all UI primitives
-- All prices are stored in EUR cents (integers), displayed with 2 decimal places
-- GraphQL schema changes require running: npm run codegen
-- Never modify generated/graphql.ts directly — it's auto-generated
-```
+- **Reading every document before every task.** Trigger the smallest relevant skill or reference.
+- **Copying the architecture manual.** Link to the source when a matching task needs it.
+- **Static component or route inventories.** Require code search and representative-usage inspection instead.
+- **Vendor-specific universal rules.** Project canonical semantic owners take precedence when their responsibility matches; vendor primitives remain the fallback where no project owner exists.
+- **Layer slogans.** "Thin screens, fat hooks" can move complexity without improving cohesion.
+- **Fixed line-count limits.** Treat size as a review signal unless a verified project check enforces a limit for a concrete reason.
+- **Duplicating formatter or linter rules.** Document the command and meaningful exceptions, not every mechanical rule.
+- **Aspirational commands or policies.** Incorrect guidance is worse than a short omission.
 
-### What NOT to do
+## Maintenance
 
-```markdown
-## Do not
+- Add a rule after a repeated or high-impact failure, not for every style preference.
+- Keep the file short enough to scan in one pass; relevance matters more than a numeric limit.
+- Re-check triggers, paths, and commands when repository tooling changes.
+- Remove detail after a focused skill, script, or configuration becomes the source of truth.
+- Keep shared `AGENTS.md` and Claude-specific guidance linked rather than duplicated.
 
-- Don't install new dependencies without asking
-- Don't modify the auth flow (lib/auth-client.ts)
-- Don't create migration files — ask first
-- Don't use console.log — use the logger utility
-```
-
-## Anti-patterns to avoid
-
-**Don't paste your entire architecture doc.** Claude reads the code. It doesn't need a 500-line description of how your app works. It needs to know what patterns to follow and what to avoid.
-
-**Don't list every file path.** Paths change. Instead of "the auth module is at src/lib/auth/index.ts", write "the auth module is in lib/auth/ — don't modify it."
-
-**Don't write rules the linter enforces.** Claude sees linter errors. Writing "use single quotes" when your ESLint config already enforces it is wasted tokens.
-
-**Don't write aspirational rules you don't follow.** If your codebase has zero tests, don't write "every function must have a test." Write what's actually true: "add tests for helpers and pure logic. Screen components don't need tests."
-
-## Tips
-
-**Put CLAUDE.md at the project root.** Claude Code looks for it there first.
-
-**Keep it under 150 lines.** The file is re-read every session. Long files cost tokens and dilute the important instructions.
-
-**Use nested CLAUDE.md for monorepos.** Put a root-level CLAUDE.md with shared rules, and per-package CLAUDE.md files with package-specific rules:
-
-```
-/CLAUDE.md              # Shared: repo structure, monorepo commands
-/apps/api/CLAUDE.md     # API-specific: NestJS patterns, DB rules
-/apps/mobile/CLAUDE.md  # Mobile-specific: RN patterns, navigation
-/packages/core/CLAUDE.md # Core-specific: service patterns
-```
-
-**Update it reactively.** Don't try to anticipate every rule upfront. When the agent makes a mistake, add a one-line rule to prevent it next time. The file grows from real problems, not imagined ones.
+The test: Claude should know which workflow to load and which boundaries are hard, while still inspecting current code and configuration before choosing an implementation.
