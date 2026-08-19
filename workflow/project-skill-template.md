@@ -1,163 +1,178 @@
 # Project Skill Template for AI Agents
 
-Use project skills when a repository is too large or too domain-heavy for one short `AGENTS.md`.
+Use project skills to hold focused operating knowledge that would make a root `AGENTS.md` noisy or irrelevant to most tasks. The audience is repository maintainers designing reusable agent workflows for a framework, application, domain, or tool boundary.
 
-`AGENTS.md` should stay small and philosophical. Project skills can hold focused, task-specific operating knowledge that the agent loads only when relevant.
+## Progressive-Disclosure Model
 
-Good use cases:
+Keep each layer responsible for one job:
 
-- large monorepos with multiple apps or packages
-- generated API clients or SDK workflows
-- domain-specific rules such as permissions, payments, medical records, loans, trading, logistics, or compliance
-- repeated workflows such as "add a page", "add a dialog", "add an endpoint", "add a task type"
-- strict review gates for risky or AI-generated code
+1. **Root `AGENTS.md`** — states short triggers and repository-wide hard constraints.
+2. **`SKILL.md`** — defines the outcome, required workflow, decisions, and checks for one class of task.
+3. **References and scripts** — provide detailed domain rules, examples, or repeatable automation only when a workflow step needs them.
+4. **Source code and configuration** — remain authoritative for current APIs, commands, schemas, and behavior.
 
-Bad use cases:
+Do not require every skill or reference for every change. Load the smallest focused set that covers the task.
 
-- duplicating the linter or formatter
-- documenting every file in the repository
-- storing stale route trees, package inventories, or implementation trivia
-- forcing one app's style onto another app that has a safe local pattern
-- replacing code search with instructions
+## Good Uses
 
----
+- a package or application with distinct conventions and product risks
+- generated API, schema, migration, release, or deployment boundaries
+- domain-specific rules such as permissions, payments, records, trading, logistics, or compliance
+- repeated workflows such as adding a page, form, endpoint, background job, or state transition
+- a focused authoring or review gate that applies only to particular files or changes
+
+Avoid skills that merely duplicate the linter, list every file, preserve volatile package inventories, or force one application's harmless preferences onto another.
 
 ## Skill Shape
 
+The exact metadata format depends on the agent platform. When the platform supports name and description metadata, put specific trigger conditions in the description.
+
 ```markdown
 ---
-name: app-orders
+name: application-ui-authoring
 description: |
-  App-specific conventions for the orders dashboard.
-  Use when:
-    - working in apps/orders/
-    - user mentions "orders dashboard"
-    - file paths contain "apps/orders"
+  Author and review React UI for the application package.
+  Use when creating, replacing, or substantially changing its screens,
+  components, hooks, or interaction behavior.
 ---
 
-# Orders Dashboard Conventions
+# Application UI Authoring
 
-> This skill supplements the root AGENTS.md and the shared coding standards.
+This skill supplements the root instructions and shared coding standards.
 
-## Overview
+## Outcome
 
-- Package: `@acme/orders`
-- Purpose: internal operations dashboard for order processing
-- Main risks: wrong order state transitions, stale customer data, accidental manual refunds
+Implement cohesive UI that follows the application's semantic contracts,
+preserves behavior and accessibility, and introduces no unjustified shared API.
 
-## Local Patterns
+## Required sources
 
-- Use existing app wrappers before shared lower-level UI primitives.
-- Keep route files thin. Put workflow behavior in hooks or focused child components.
-- New user-facing strings go in all locale files.
-- Use generated API types and endpoint hooks from `src/api/generated/`.
+- Read the shared component guideline before authoring UI.
+- Inspect the affected package's configuration and nearby code.
+- Load the API-boundary reference only if the change touches remote data.
 
-## Review Gates
+## Workflow
 
-- Do not edit generated API files.
-- Do not add new order state strings outside the typed state map.
-- New order-state transitions need table-driven tests.
-- Empty backend states must render explicit empty UI, not crash or silently disappear.
+1. State the semantic responsibility and required behavior.
+2. Search project-owned semantic components, feature/domain candidates, hooks,
+   helpers, and services.
+3. Inspect the strongest candidate and at least one representative usage.
+4. If project code does not own the responsibility, inspect the approved vendor
+   library before using a lower-level primitive.
+5. Record `reuse`, `extend`, `feature-local`, or `shared` and the reason.
+6. Implement the smallest cohesive change.
+7. Run the verified checks for the affected package.
+
+## Hard gates
+
+- Use an explicitly established canonical semantic primitive when its
+  responsibility matches.
+- A direct vendor or platform primitive requires a stated semantic or behavioral
+  gap in the canonical owner.
+- Preserve generated-code, accessibility, i18n, and test conventions documented
+  by the owning package.
+
+## Contextual review
+
+- Evaluate domain reuse by responsibility, behavior, data assumptions, ownership,
+  and likely change direction; similar markup alone is insufficient.
+- Treat file size as a prompt to review cohesion, not a split requirement.
+- A private single-use extraction is valid when it clarifies a responsibility.
+  Do not generalize it into a shared abstraction without independent consumers
+  and a stable contract.
+- Memoize only for a specific computation cost or identity requirement.
 
 ## Verification
 
-- Type check: `pnpm --filter @acme/orders check:type`
-- Tests: `pnpm --filter @acme/orders test`
-- Full check: `pnpm --filter @acme/orders check:code`
+- Run the package's type, lint, and focused test commands as defined in current
+  package configuration or CI.
+- Report failed checks and checks that could not run.
 ```
 
----
+Replace generic names and references with facts verified in the current repository. Do not invent scripts or commands to make the template look complete.
+
+## Authoring Evidence Template
+
+An authoring skill can require this compact record for non-trivial new or replacement UI:
+
+```text
+Responsibility: [semantic job and required behavior]
+Candidates: [project code and library options examined]
+Representative usage: [usage inspected and what it established]
+Decision: reuse | extend | feature-local | shared — [reason]
+Canonical deviation: [semantic/behavioral gap, or not applicable]
+```
+
+Keep the evidence in the plan, work log, pull-request summary, or another place the reviewer can see. The record is a decision aid, not paperwork; scale it down for low-risk changes.
+
+## Separate Hard Gates From Review Judgment
+
+Skills should label the distinction explicitly.
+
+Use hard enforcement for stable, discoverable contracts such as:
+
+- generated or read-only boundaries
+- an explicitly documented canonical semantic primitive
+- required validation at an untrusted-data boundary
+- security, permissions, accessibility, or i18n requirements
+- commands or tests required by the owning package or CI
+
+Use contextual review for choices that depend on local evidence:
+
+- whether two domain components actually share a responsibility
+- whether a private extraction improves comprehension
+- whether a cohesive file should be split
+- whether a hook is the clearest owner for screen-specific behavior
+- whether memoization has a meaningful cost or identity benefit
+
+This prevents a reviewer from treating a common domain component as mandatory while still making bypasses of a true project primitive visible and enforceable.
 
 ## Recommended Skill Types
 
 ### Framework Skill
 
-Use for shared conventions across a monorepo.
+Include shared UI, form, routing, data, i18n, testing, and generated-code boundaries only where the framework or monorepo establishes them. Route package-specific exceptions to package skills.
 
-Include:
+### Application Or Package Skill
 
-- tech stack only when it changes how the agent should code
-- shared UI, form, routing, data, i18n, and test patterns
-- generated-code boundaries
-- common verification commands
-- "ask vs proceed" rules
+Include the package's purpose, product risks, stable semantic owners, local conventions, boundary rules, and verified checks. Link to representative code instead of copying a route tree or component inventory.
 
-Avoid:
+### Workflow Skill
 
-- full architecture history
-- complete route trees
-- long package inventories
-- rules already enforced by lint/type checks
-
-### App Skill
-
-Use for one app or package.
-
-Include:
-
-- purpose and main product risks
-- local wrappers and conventions
-- auth, permissions, i18n, API, routing, and test patterns that affect implementation
-- local verification commands
-- examples worth inspecting before similar work
-
-Avoid:
-
-- copying another app's conventions as mandatory rules
-- documenting every page
-- restating the framework skill
+Define one repeatable outcome and the decisions required to reach it. Keep the main file procedural; move detailed variants, examples, and troubleshooting branches to on-demand references.
 
 ### Tool Or Boundary Skill
 
-Use for generated APIs, database migrations, queues, feature flags, docs generation, or release workflows.
-
-Include:
-
-- source of truth
-- read-only/generated paths
-- command to regenerate or sync
-- import/use conventions
-- manual fallback boundary and when it is allowed
-- verification commands
+Identify the source of truth, generated or read-only paths, verified sync command, supported access pattern, fallback boundary, and checks. Explain when manual work is allowed rather than silently bypassing the tool.
 
 ### Review Gate Skill
 
-Use for strict final review.
-
-Include:
-
-- hard gates
-- local consistency rule
-- review severity
-- final self-review checklist
-
-Keep it focused on issues worth blocking a change over.
-
----
+Separate blocking violations from contextual signals, define severity, and end with a short self-review. Keep it limited to issues worth changing the outcome over.
 
 ## Design Rules
 
-- Keep each skill focused. If a section only applies to one repeated workflow, create a workflow skill instead of bloating the app skill.
-- Put trigger conditions in the description so the agent knows when to load the skill.
-- Prefer "search these places first" over "edit this file".
-- Include commands the agent can run to verify its work.
-- Use examples as references, not mandatory transplants.
-- Update skills reactively when agents make repeated mistakes.
-- Delete stale facts. Wrong instructions are worse than missing instructions.
+- Give each skill a concrete outcome and narrow trigger.
+- Put the essential workflow and hard gates in `SKILL.md`; do not hide required steps in an optional reference.
+- Route to detailed references at the step where they become relevant.
+- Prefer "search and inspect these owners" over a static inventory.
+- Link to schemas, generated configuration, and package scripts instead of duplicating volatile facts.
+- Include failure modes and a safe fallback when the workflow has one.
+- Use examples as evidence of a pattern, not templates to transplant blindly.
+- Remove stale instructions. Missing guidance is safer than authoritative-looking misinformation.
 
----
+## Short Root Trigger
 
-## Root AGENTS.md Reference
-
-In a repo that uses project skills, keep the root file short:
+The corresponding root `AGENTS.md` entry should remain brief:
 
 ```markdown
-## Coding Standards
+## Reuse-first authoring
 
-Before implementing non-trivial changes, read:
-- docs/CODING-PRINCIPLES.md
-- docs/COMPONENT-GUIDELINES.md
-- docs/QUALITY-GATE.md
-
-For app-specific or workflow-specific work, load the relevant project skill before editing.
+- Before non-trivial implementation or refactoring, invoke the reuse-first
+  authoring skill (`$reuse-first-authoring` in Codex or
+  `/reuse-first-authoring` in Claude Code).
+- If project skills are not discovered automatically, read
+  `.agents/skills/reuse-first-authoring/SKILL.md` directly.
+- Load the matching project skill before package-specific or repeated workflow work.
 ```
+
+The root trigger routes the task. The focused skill owns the workflow.

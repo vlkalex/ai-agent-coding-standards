@@ -1,8 +1,8 @@
 # AI Agent Coding Standards
 
-Standards for getting AI agents to write clean React, React Native, and TypeScript code. Stop agents from creating 300-line god components with duplicated logic.
+Standards for getting AI agents to write cohesive, reuse-aware React, React Native, and TypeScript code without mechanical layering or speculative abstractions.
 
-Developed while building a mobile app with 3,500+ users, a SaaS platform, and several TypeScript projects. They solve the real problems I kept hitting: duplicate components, inconsistent patterns, and agents that ignore existing code.
+Developed while building a mobile app with 3,500+ users, a SaaS platform, and several TypeScript projects. They address recurring problems: duplicated semantic components, inconsistent patterns, unverified reuse, and complexity moved into the wrong layer.
 
 ## Install
 
@@ -10,14 +10,18 @@ Developed while building a mobile app with 3,500+ users, a SaaS platform, and se
 npx ai-agent-standards init
 ```
 
-Copies the standard files into your project's `docs/` folder. Then reference them from your `CLAUDE.md` or `AGENTS.md`:
+Copies the reference standards into your project's `docs/` folder and installs the focused workflow for Agent Skills-compatible tools at `.agents/skills/reuse-first-authoring/` and for Claude Code at `.claude/skills/reuse-first-authoring/`.
+
+Add a short trigger using the invocation syntax your agent supports:
 
 ```markdown
-## Coding Standards
-Before implementing any feature, read:
-- docs/COMPONENT-GUIDELINES.md
-- docs/CODING-PRINCIPLES.md
-- docs/QUALITY-GATE.md
+## Reuse-first authoring
+
+Before non-trivial implementation or refactoring, invoke the reuse-first authoring skill.
+- Codex: `$reuse-first-authoring`
+- Claude Code: `/reuse-first-authoring`
+- If project skills are not discovered automatically, read
+  `.agents/skills/reuse-first-authoring/SKILL.md` directly.
 ```
 
 Use `--force` to overwrite existing files.
@@ -26,13 +30,14 @@ Use `--force` to overwrite existing files.
 
 | File | What it covers |
 |------|---------------|
-| [component-guidelines.md](./react/component-guidelines.md) | React/React Native component architecture, reuse patterns, testing rules |
+| [component-guidelines.md](./react/component-guidelines.md) | Evidence-based UI reuse, cohesion, extraction, memoization, and testing |
 | [coding-principles.md](./principles/coding-principles.md) | Four universal principles: think first, simplicity, surgical changes, goal-driven execution |
 | [quality-gate.md](./review/quality-gate.md) | Final review pass for type safety, API boundaries, i18n, tests, and local consistency |
 | [claude-md-guide.md](./agents/claude-md-guide.md) | How to write CLAUDE.md files that steer agents without micromanaging |
-| [agents-md-guide.md](./agents/agents-md-guide.md) | How to write AGENTS.md files for any AI coding tool |
+| [agents-md-guide.md](./agents/agents-md-guide.md) | How to use a short AGENTS.md as a trigger for focused guidance |
 | [ticket-structure.md](./workflow/ticket-structure.md) | How to structure tickets so agents can execute without ambiguity |
-| [project-skill-template.md](./workflow/project-skill-template.md) | How to create focused repo/app/workflow skills for large codebases |
+| [project-skill-template.md](./workflow/project-skill-template.md) | How to create focused repo/app/workflow skills with progressive disclosure |
+| [reuse-first-authoring](./skills/reuse-first-authoring/SKILL.md) | Focused discovery, ownership-decision, implementation, and verification workflow |
 
 ## Philosophy
 
@@ -42,21 +47,25 @@ These standards take a different approach:
 
 **Steer, don't micromanage.** Tell the agent how you think, not which file to edit. A good CLAUDE.md reads like a letter explaining the project philosophy, not a list of forbidden patterns.
 
-**Reuse before create.** The #1 problem with AI-generated React code is duplicate components. Every standard here starts with "check what already exists" before writing anything new.
+**Reuse with evidence.** Before creating UI, identify its responsibility, search project-owned candidates, inspect a representative usage, and choose `reuse`, `extend`, `feature-local`, or `shared`. Project canonical semantic components come before vendor primitives.
 
-**Principles over rules.** "Simplicity first" is more useful than "never use more than 3 props." Agents are smart enough to apply principles. They're also smart enough to follow bad rules literally.
+**Enforce stable contracts, review domain choices.** Bypassing an explicitly established canonical primitive needs a concrete semantic or behavioral gap. Domain components are contextual candidates; similar markup alone should not force reuse.
 
-**Let the agent explore.** It knows the codebase better than your instructions file. Don't specify file paths. Describe what you want and let it figure out where to make the change.
+**Cohesion over slogans.** Screens do not have to be empty composers, hooks should not become logic warehouses, and line counts are review signals rather than automatic split points. A private single-use extraction can improve clarity without becoming a shared abstraction.
 
-**Test what matters.** Not everything needs a test. But helpers and pure logic always do. Bug fixes always get a regression test first. Simple presentational components don't need tests.
+**Optimize only for a reason.** Memoization is appropriate for a specific computation cost or identity contract, not as a blanket convention.
+
+**Route, do not inventory.** Keep `AGENTS.md` short. Use it to trigger focused standards and skills, then let the agent inspect current code, configuration, representative usages, and schemas as the source of truth.
+
+**Test what matters.** Focus on behavior that can regress silently: domain rules, validation, permissions, state transitions, effects, and mutation flows. Bug fixes get a regression case when practical; tests that only mirror simple rendering add little value.
 
 **Gate hard risks, not preferences.** A good review gate blocks unsafe types, generated-code edits, hardcoded i18n strings, unsafe backend states, and missing behavior tests. It does not force one app's harmless local style onto another.
 
-**Use project skills for big repos.** Keep AGENTS.md short. Put app-specific conventions, generated API workflows, review gates, and repeated task playbooks in focused skills that agents load only when relevant.
+**Use progressive disclosure for big repos.** Put app conventions, generated API workflows, review gates, and repeated task playbooks in focused skills. Keep detailed references on demand so unrelated tasks do not load them.
 
 ## See it in action
 
-[alexvlk.com](https://alexvlk.com) is a simple portfolio site, but it was built entirely by AI agents following these standards. Even on a small project like this, the [source code](https://github.com/vlkalex/alexvlk-portfolio) shows the difference the guidelines make: thin page composers, reusable UI primitives, separated data, proper types. The architecture holds up regardless of project size.
+[alexvlk.com](https://alexvlk.com) is a simple portfolio site, but it was built entirely by AI agents following these standards. The [source code](https://github.com/vlkalex/alexvlk-portfolio) demonstrates reusable UI contracts, cohesive ownership, separated data boundaries, and strict types in a small project.
 
 ## Who is this for
 

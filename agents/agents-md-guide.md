@@ -1,104 +1,120 @@
 # How to Write Effective AGENTS.md Files
 
-Your AGENTS.md is the single most important file for shaping how AI agents behave in your project. A good one makes agents feel like they understand your codebase. A bad one either gets ignored or actively misleads.
+A task-oriented guide for repository maintainers. Use `AGENTS.md` as a short, always-visible routing layer: establish the few invariants that apply broadly, then point agents to focused standards or skills when the task matches.
 
-## What AGENTS.md is for
+## What AGENTS.md Should Do
 
-AGENTS.md tells the agent how you think about the project, not how to edit files. It should answer:
+An effective root file answers four questions quickly:
 
-- What is this project and what does it do?
-- How do we think about building it?
-- What patterns do we follow and why?
-- What should the agent never do?
+- What is this project and which terms are easy to misunderstand?
+- Which safety or ownership rules apply to nearly every change?
+- What task or path triggers a focused document, skill, or workflow?
+- Which verified commands or sources tell an agent whether the change is correct?
 
-## What NOT to put in AGENTS.md
+It should not contain the full implementation handbook. Long instructions consume attention on unrelated tasks and become stale as the repository changes.
 
-- File paths that will go stale ("edit src/components/Button.tsx")
-- Implementation details that belong in code comments
-- Copy of your tech stack (the agent can read package.json)
-- Rules so specific that they break when the codebase evolves
-- 5,000 lines of everything you've ever thought about code
+## Use Progressive Disclosure
 
-## Structure that works
+Organize guidance in layers:
+
+1. **`AGENTS.md` trigger** — short project context, hard constraints, and conditions that route the task.
+2. **Focused standard or skill** — the workflow and decision rules needed for that class of work.
+3. **On-demand references** — detailed domain models, API generation steps, examples, or checklists loaded only when the workflow calls for them.
+4. **Code and configuration** — the source of truth for current behavior, scripts, schemas, and local patterns.
+
+This structure lets an agent discover detail when it becomes relevant without loading every rule before every task.
+
+## A Minimal Structure
 
 ```markdown
 # Project Name
 
-One paragraph: what this project is, who it's for, what it does.
+One paragraph describing the product, users, and main risk.
 
-## How we build
+## Terms
 
-2-3 paragraphs written like a letter to a new developer joining
-the team. Explain the philosophy, not the details. The agent
-will figure out the details from the code.
+- "record" = the persisted business entity, not a log entry
+- "operator" = a staff user of the internal application
 
-## Glossary
+## Required workflow
 
-Define ambiguous terms. Especially important when the same word
-could mean different things:
-- "user" = end user of the app
-- "developer" = someone building on our platform
-- "agent" = the AI that's editing code right now
+- Before non-trivial implementation or refactoring, invoke the reuse-first
+  authoring skill (`$reuse-first-authoring` in Codex or
+  `/reuse-first-authoring` in Claude Code).
+- If project skills are not discovered automatically, read
+  `.agents/skills/reuse-first-authoring/SKILL.md` directly.
+- For package-specific or repeated workflow work, load the matching project skill
+  before editing.
 
-## Principles
+## Hard constraints
 
-3-5 principles you actually care about. Not aspirational rules
-you don't follow — real things that guide decisions.
+- Do not edit generated files; use the generator documented by the owning package.
+- Do not add dependencies without approval.
 
-## Do not
+## Verification
 
-Short list of things that have gone wrong before.
-- Don't add new dependencies without asking
-- Don't modify the auth layer
-- Don't create new API routes without a corresponding test
+- Use the commands defined by the affected package and CI configuration.
+- Report failed or unavailable checks.
 ```
 
-## Tips from production experience
+Adapt this structure to the repository. Replace generic references with paths and commands verified from the current checkout.
 
-**Write it by hand.** Don't let an agent generate your AGENTS.md. It needs to reflect how you actually think, not how an AI thinks you think.
+## Write Effective Triggers
 
-**Keep it under 200 lines.** If it's longer, the agent spends too many tokens reading instructions instead of reading your code. Short and opinionated beats long and comprehensive.
-
-**Update it when the agent keeps making the same mistake.** If you find yourself correcting the agent on the same thing in multiple threads, add one line to AGENTS.md. That's how the file grows organically.
-
-**Use a glossary for domain-heavy projects.** Finance, healthcare, logistics — any domain where words have specific meanings that differ from common usage. The glossary prevents the agent from making wrong assumptions.
-
-**Don't duplicate your linter.** If ESLint already enforces semicolons, don't also write "always use semicolons" in AGENTS.md. The agent will see the linter errors.
-
-## Example: minimal but effective
+A trigger should say **when** to load guidance, not summarize all of it:
 
 ```markdown
-# Acme Dashboard
-
-Internal dashboard for the ops team to monitor order processing.
-React + TypeScript frontend, NestJS API, PostgreSQL.
-
-## How we build
-
-We optimize for clarity over cleverness. The ops team reads this
-code when debugging production issues, so every component should
-be obvious in what it does. No abstractions for single-use code.
-
-We use the existing component library (Shadcn) for all UI. Don't
-create custom components when Shadcn has one that works.
-
-## Glossary
-
-- "order" = a customer purchase order (not a sort order)
-- "processing" = the backend pipeline that fulfills orders
-- "operator" = an ops team member using this dashboard
-
-## Principles
-
-1. Thin screens, fat hooks. Screens compose, hooks contain logic.
-2. Every API call goes through a React Query hook. No raw fetch.
-3. New features get a helper test. New screens don't need tests.
-
-## Do not
-
-- Don't add new npm packages without checking if an existing one covers it
-- Don't modify anything in lib/auth/ — it's shared with the mobile app
-- Don't use any or type assertions unless there's a comment explaining why
+- Before non-trivial implementation or refactoring, invoke the reuse-first
+  authoring skill using this agent's supported syntax.
+- If skill discovery is unavailable, read `.agents/skills/reuse-first-authoring/SKILL.md`.
+- When changing generated API usage, load the API-boundary skill.
+- When touching a package, follow its scoped instructions and verification commands.
 ```
 
-This is 30 lines and gives the agent everything it needs. The agent will read the code for everything else.
+Keep the detailed lookup sequence, decision rubric, examples, and failure handling inside the referenced standard or skill. If a rule affects only one repeated workflow, it is usually too specific for the root file.
+
+## What Belongs in the Root File
+
+Include:
+
+- a brief product purpose and high-impact risks
+- a compact glossary for domain terms whose ordinary meaning would mislead
+- hard constraints that apply across the repository
+- trigger conditions for framework, app, boundary, or review guidance
+- verified entry points for build, test, lint, and type checks
+- precedence rules when local conventions can differ safely
+
+Keep hard constraints genuinely hard. An explicitly established canonical semantic component can be a hard UI rule because it owns stable accessibility and behavior. Reusing a domain component is usually a contextual decision and belongs in the focused authoring workflow, not a blanket root mandate.
+
+## What Belongs Elsewhere
+
+Move these to focused standards, skills, or references:
+
+- component lookup and reuse-decision workflows
+- domain-specific permissions and state transitions
+- generated-client or migration procedures
+- package-specific architecture and verification
+- detailed review checklists
+- long examples and troubleshooting branches
+
+The target file should remain useful after common paths or implementations change. Link to the current source of truth instead of copying volatile inventories.
+
+## Anti-Patterns
+
+- **Duplicating the linter or formatter.** Agents can run the configured tool; document only exceptions or commands that are hard to discover.
+- **Copying the whole architecture document.** Route to it when a task needs that context.
+- **Listing every implementation path.** Keep only stable ownership boundaries and source-of-truth links.
+- **Universal layer slogans.** Rules such as "thin screens, fat hooks" move complexity without proving cohesion.
+- **Fixed line-count mandates.** A size threshold is a review signal unless the project has a measured, enforced reason for a hard limit.
+- **Vendor-first UI rules.** Project canonical semantic components should be considered before lower-level library primitives.
+- **Aspirational policy.** Instructions that contradict the code, configuration, or team practice teach agents to ignore the file.
+
+## Maintenance
+
+- Add guidance after a repeated or high-impact failure, not for every personal preference.
+- Keep the root file short enough to scan in one pass; use relevance, not an arbitrary line count, as the test.
+- Verify linked paths and commands when tooling changes.
+- Remove duplicated or stale rules when a skill, check, or configuration becomes the source of truth.
+- Check how each supported agent discovers and scopes nested instruction files before relying on nested `AGENTS.md` behavior.
+
+The test: a new agent should know which focused guidance to load and which boundaries it must not cross, while still reading the current code before choosing an implementation.
