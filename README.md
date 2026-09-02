@@ -24,6 +24,20 @@ Before non-trivial implementation or refactoring, invoke the reuse-first authori
 
 Use `--force` to overwrite existing files.
 
+## ESLint plugin
+
+The standards that reviewers flag most are mechanical, so they ship as lint rules too: [`eslint-plugin/`](./eslint-plugin/README.md) — 14 rules (named conditions, named hook deps, one component per file, no double assertions, no verbose comments, no inline noops, `.ts` without JSX, boolean-function naming, banned identifiers, …) plus two CI checkers for translation parity and snapshot coverage. Each rule maps to a real review comment; defaults were calibrated on a 10k-file React Native codebase.
+
+```bash
+npm i -D eslint-plugin-ai-agent-standards
+```
+
+```js
+// eslint.config.js
+const aiAgentStandards = require('eslint-plugin-ai-agent-standards');
+module.exports = [aiAgentStandards.configs.recommended];
+```
+
 ## What's inside
 
 | File | What it covers |
