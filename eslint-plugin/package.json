@@ -1,0 +1,47 @@
+{
+  "name": "eslint-plugin-ai-agent-standards",
+  "version": "0.1.0",
+  "description": "ESLint rules that mechanize the review comments human reviewers leave on AI-agent-written React / React Native / TypeScript code: named conditions, named hook deps, one component per file, no double assertions, no verbose comments, no inline noops, .ts-without-JSX, banned identifiers.",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "rules",
+    "bin",
+    "README.md"
+  ],
+  "bin": {
+    "check-translation-parity": "bin/check-translation-parity.js",
+    "check-snapshot-coverage": "bin/check-snapshot-coverage.js"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "react",
+    "react-native",
+    "typescript",
+    "ai-agents",
+    "code-review"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "eslint": ">=9.0.0"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vlkalex/ai-agent-coding-standards",
+    "directory": "eslint-plugin"
+  },
+  "author": "Alex Vlk",
+  "homepage": "https://github.com/vlkalex/ai-agent-coding-standards/tree/main/eslint-plugin#readme"
+}
