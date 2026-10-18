@@ -1,7 +1,7 @@
 {
   "name": "ai-agent-standards",
-  "version": "1.1.0",
-  "description": "Reuse-first coding standards, authoring workflows, and an ESLint plugin for React, React Native, and TypeScript agents.",
+  "version": "1.2.0",
+  "description": "Reuse-first coding standards, a mined review casebook, authoring and review skills, and an ESLint plugin for React, React Native, and TypeScript agents.",
   "bin": {
     "ai-agent-standards": "./bin/init.js"
   },
@@ -34,7 +34,7 @@
   "homepage": "https://github.com/vlkalex/ai-agent-coding-standards#readme",
   "files": [
     "bin/",
-    "react/",
+    "frameworks/",
     "agents/",
     "principles/",
     "review/",

@@ -2,7 +2,7 @@
 
 ESLint rules that mechanize the review comments human reviewers keep leaving on AI-agent-written React / React Native / TypeScript code. Each rule exists because a strict reviewer flagged the pattern repeatedly on real merge requests; the goal is that those comments never need typing again.
 
-Framework-agnostic (React, React Native, plain TypeScript), ESLint 9 flat config.
+ESLint 9 flat config, in two layers like the standards: core rules for any TypeScript, and React rules (`named-hook-deps`, `one-component-per-file`, `no-tsx-without-jsx`, `no-repeated-jsx-literal-prop`, `maybe-prefix-conditional-element`, `no-element-map-in-render`) for React, Next.js, and React Native code.
 
 ## Install
 
@@ -15,9 +15,12 @@ npm i -D eslint-plugin-ai-agent-standards        # or: npm i -D /path/to/this/fo
 const aiAgentStandards = require('eslint-plugin-ai-agent-standards');
 
 module.exports = [
-  aiAgentStandards.configs.recommended,   // bundles @typescript-eslint parser + stock rules
-  // or, if you already configure TypeScript parsing:
-  // aiAgentStandards.configs['rules-only'],
+  aiAgentStandards.configs.react,          // core + React rules; bundles @typescript-eslint parser + stock rules
+  // Angular, Vue, Node, or any non-React TypeScript: core rules only
+  // aiAgentStandards.configs.typescript,
+  // if you already configure TypeScript parsing:
+  // aiAgentStandards.configs['react-rules-only'] or ['typescript-rules-only'],
+  // `recommended` and `rules-only` remain as aliases of the React presets.
   {
     rules: {
       // project-specific tribal knowledge, opt in:
@@ -48,8 +51,10 @@ module.exports = [
 | `maybe-prefix-conditional-element` | `const maybeErrorElement = cond ? <X/> : null` — conditionally rendered element consts carry the `maybe` prefix. Option: `prefix`. | off (opt in) |
 | `require-call-in-file` | "Every story ships with tracking" — files matching a regex must call given functions (e.g. every `*Screen.tsx` calls the analytics + page-view hooks). Fully project-configurable. | off (opt in) |
 | `no-optional-boolean` | "Pročpak undefined?" — `flag?: boolean` / `boolean \| undefined`. A Tier-3 preference; enable per project. | off (opt in) |
+| `todo-requires-ticket` | "A TODO carries its ticket." `TODO`/`FIXME`/`HACK` comments must reference a tracker key (`ABC-12`) or URL; consecutive `//` lines count as one note. Set `ticketPattern` to your project's keys — the default also accepts look-alikes such as `ISO-8601`; for GitHub issues use `#\\d{2,}` or the issue URL. Options: `terms`, `ticketPattern` (regex source). | warn |
+| `no-element-map-in-render` | "Needless creation of every JSX element" — a map of JSX elements built inside a function and indexed by key (`byVariant[variant]`). Use an exhaustive `switch` in its own component, or a module-scope map. Not flagged: slot objects whose elements are all rendered, literal keys, writes, and `Object.keys(map).map((k) => map[k])`. Misses maps built from element consts (`{ a, b }`); still flags `Object.entries(m).map(([k]) => m[k])`, chained iteration such as `Object.keys(m).filter(…).map(…)`, and static keys such as `m[Variant.a]` — disable per line with a reason. Option: `min` (2). | error |
 
-`recommended` also enables stock rules for the rest of the mechanical tier: `no-nested-ternary`, `complexity` (12), `max-lines` (250), `max-lines-per-function` (120), `@typescript-eslint/no-explicit-any`, `no-non-null-assertion`, `consistent-type-assertions` (no object-literal casts).
+The `react` and `typescript` presets also enable stock rules for the rest of the mechanical tier: `no-nested-ternary`, `complexity` (12), `max-lines` (250), `max-lines-per-function` (120), `@typescript-eslint/no-explicit-any`, `no-non-null-assertion`, `consistent-type-assertions` (no object-literal casts).
 
 ## Calibration (why the defaults are what they are)
 
@@ -67,6 +72,8 @@ Run once over a 10,876-file React Native codebase with a strict review culture. 
 | `no-verbose-comments` | 0.8 | `warn` |
 | `boolean-function-prefix` | 1.2 before / ~0.1 after allowing `getIs*` | `error` |
 | `no-tsx-without-jsx` | 3.9 — real, but a legacy backlog | `warn` until clean |
+| `no-element-map-in-render` | 0.39 when it flagged every element object; 0.17 once narrowed to maps indexed by key (sampled hits were all real) | `error` |
+| `todo-requires-ticket` | 0.3 | `warn` |
 | `maybe-prefix-conditional-element` | 1.6 — codebase doesn't use the convention | `off` |
 | `no-optional-boolean` | 5.6 | `off` (preference) |
 | `require-call-in-file` | depends entirely on patterns | `off` (opt in) |
@@ -84,7 +91,7 @@ npx check-snapshot-coverage --base master [--component 'components/.*\.tsx$'] [-
 #   every changed/added component file (committed since base + working tree) needs a sibling component test
 ```
 
-Both exit non-zero on failure (`--strict` for the snapshot checker) so they drop straight into a pipeline or a `dangerfile`.
+Both exit non-zero on failure (`--strict` for the snapshot checker) so they drop straight into a CI pipeline or a pre-merge bot.
 
 ## What is deliberately NOT a lint rule
 
@@ -95,6 +102,10 @@ These recur in reviews but need domain knowledge a linter doesn't have; keep the
 - Outer margins/spacing baked into exported components (style semantics vary per design system).
 - Pre-typing "at boundaries" (which literals cross a boundary is a judgment call; `consistent-type-assertions` covers the mechanical part).
 - Tracking, accessibility, translations parity, feature-toggle coverage (product completeness).
+- Exhaustive state maps (`satisfies Record<State, …>` instead of `Partial`): whether a map is a per-state decision is semantic. Enable `@typescript-eslint/switch-exhaustiveness-check` for the `switch` half in projects with type-aware linting.
+- Form field paths built from template strings: the dangerous part is the dynamic index, which only the form's types reveal.
+
+Worked examples for all of these are in the [review casebook](../review/review-casebook.md).
 
 ## Origin
 

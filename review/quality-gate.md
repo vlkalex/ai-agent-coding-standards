@@ -13,6 +13,8 @@ The goal is code that a human reviewer and a future AI agent can understand quic
 
 Small local duplication and private single-use extraction are acceptable when they keep a workflow clear. Shared abstractions need a stable contract, not just similar markup or a line-count reduction.
 
+Worked examples of every gate below, with the reviewers' reasons, tiers, and a list of patterns not to flag, are in [review-casebook.md](./review-casebook.md). To run the review itself, use the [agent-code-review skill](../skills/agent-code-review/SKILL.md). Framework-specific gates live in the framework layer for the code at hand, when one is installed.
+
 ---
 
 ## Local Consistency Rule
@@ -46,8 +48,11 @@ A local pattern becomes a review issue when it creates unsafe types, bypasses a 
 - Do not add `any`, `unknown as`, non-null assertions, or `as SomeType` casts. The default exception is `as const`.
 - If a type escape is unavoidable, isolate it at the boundary and explain why the safer option does not work.
 - Use generated API types, local unions/enums, `Record<...>`, and `satisfies` so invalid domain values fail where maps are declared.
-- Validate external or unknown data with Zod, the platform parser, or an existing runtime validator before using it.
-- Backend-controlled strings and enum-like values should use generated types, local unions/enums, or typed maps instead of repeated raw strings.
+- Validate external or unknown data with the project's established runtime validator or parser before using it.
+- Backend-controlled strings and enum-like values should use generated types, local unions/enums, or typed maps instead of repeated raw strings. A hand-written union that re-declares backend states instead of using the generated type is a raw string with extra steps.
+- A decision keyed by a state or enum is exhaustive: a map that `satisfies Record<State, ...>` or a `switch` ending in `value satisfies never`. A `Partial` map switches off the compile error that a new state should raise.
+- Import exported types instead of deriving them from a callee's signature (`Parameters<typeof fn>[1]`).
+- Build typed paths (form fields, routes, translation keys) from declared literals, not template strings narrowed with `as const`.
 
 ### API And Data Boundaries
 
@@ -57,6 +62,8 @@ A local pattern becomes a review issue when it creates unsafe types, bypasses a 
 - Query invalidation and refetch logic should stay close to the mutation or event that requires it.
 - Mutation and API errors should use the app-level error/snackbar/logger pattern, not a raw lower-level dependency.
 - Render optional, empty, or impossible-looking backend states safely with an empty state, explicit `null`, or a typed helper that documents the invariant.
+- Keep optional backend values optional. Do not invent defaults such as `amount ?? 0`. Resolve "may be undefined" once at the source and pass the defined value on.
+- Success callbacks handle success. A response that means "cannot continue" is a typed result to route on, not an error raised from `onSuccess`. User-facing errors say what happened.
 
 ### Reuse Evidence And Canonical UI
 
@@ -68,7 +75,9 @@ A local pattern becomes a review issue when it creates unsafe types, bypasses a 
 
 ### UI And I18n
 
-- New user-facing strings go through the app's i18n system when the project has one.
+- New user-facing strings go through the app's i18n system when the project has one, in every supported locale, with no hardcoded currency or unit.
+- New integrations and entry points sit behind the project's feature-flag mechanism, with the default stated explicitly in every environment.
+- Accessibility labels and states ship with the change, not as a follow-up.
 - Do not render empty strings just to satisfy required props. Make the prop optional or create the right component.
 - New interactive UI should use stable test IDs when the project has a test ID convention.
 - Prefer accessible labels and semantic controls over fragile selector-only behavior.
@@ -103,11 +112,13 @@ These signals require judgment. They are prompts to inspect responsibilities, no
 - Similar markup is not enough to force two domain workflows through one component.
 - A feature-local private extraction may have one consumer. Keep it narrow rather than adding speculative variants.
 - Create a shared abstraction only when independent consumers need the same stable contract and shared ownership removes real repeated complexity.
-- Use `useMemo`, `useCallback`, and component memoization only for a specific cost or identity requirement. Do not add them as a blanket convention.
+- Memoize or cache only for a specific cost or identity requirement. Do not add it as a blanket convention.
 
 ---
 
 ## Review Severity
+
+Map these to the casebook tiers: request changes for Tier 0–2, leave Tier 3 as suggestions. The casebook's tiers come from one codebase; for its structure and placement cases (file layout, util placement, params objects, spacing ownership) the Local Consistency Rule above decides.
 
 Request changes for:
 
@@ -118,6 +129,8 @@ Request changes for:
 - unsafe rendering of optional or empty backend data
 - new or touched code that mixes page, form, mutation, event handling, and rendering responsibilities without a clear cohesive owner
 - missing focused tests for new behavior that can regress silently
+- a hand-rolled version of an existing project capability (Tier 0)
+- new uses of a pattern the team has explicitly stopped accepting in review, however many legacy usages it has. Local consistency follows current team practice, not the oldest code
 - non-trivial new or replacement UI with no reviewer-visible responsibility, candidate, representative-usage, or ownership-decision evidence
 
 Leave as a note or follow-up for:
@@ -135,6 +148,7 @@ Do not flag:
 - domain components kept separate after their semantics or behavior were shown to differ
 - preference-only rewrites from one app style to another app style
 - broad cleanup outside the touched workflow
+- anything on the casebook's [do-not-flag list](./review-casebook.md#what-is-accepted--do-not-flag) or the project's own equivalent
 
 ---
 

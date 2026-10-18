@@ -1,0 +1,4 @@
+interface:
+  display_name: "React Standards"
+  short_description: "React layer: components, hooks, effects, rendering"
+  default_prompt: "Use $react-standards while writing or reviewing this React code."

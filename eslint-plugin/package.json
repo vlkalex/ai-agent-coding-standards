@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-ai-agent-standards",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "ESLint rules that mechanize the review comments human reviewers leave on AI-agent-written React / React Native / TypeScript code: named conditions, named hook deps, one component per file, no double assertions, no verbose comments, no inline noops, .ts-without-JSX, banned identifiers.",
   "main": "index.js",
   "files": [
