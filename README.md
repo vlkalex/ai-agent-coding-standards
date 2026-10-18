@@ -12,7 +12,7 @@ Copies the core standards into your project's `docs/` folder and installs two co
 
 If your `package.json` depends on React (`react`, `react-native`, `next`, `expo`, …), it also installs the `react-standards` layer skill. Detection reads only `./package.json`: in a monorepo, run it at the repository root with `--framework react`, so the docs and skills land where your agent looks for them. Use `--framework none` for the core only. Re-running never removes files, so delete a layer's skill folders yourself to drop it.
 
-Upgrading from 1.1: `docs/COMPONENT-GUIDELINES.md` is no longer installed; it moved into the React layer. Delete the old copy and point any `CLAUDE.md`/`AGENTS.md` reference at the `react-standards` skill.
+Upgrading from 1.x (2.0 breaking change): `docs/COMPONENT-GUIDELINES.md` is no longer installed; it moved into the React layer. Delete the old copy and point any `CLAUDE.md`/`AGENTS.md` reference at the `react-standards` skill.
 
 Add a short trigger using the invocation syntax your agent supports:
 

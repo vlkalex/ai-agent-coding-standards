@@ -1,6 +1,6 @@
 {
   "name": "ai-agent-standards",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Reuse-first coding standards, a mined review casebook, authoring and review skills, and an ESLint plugin for React, React Native, and TypeScript agents.",
   "bin": {
     "ai-agent-standards": "./bin/init.js"
