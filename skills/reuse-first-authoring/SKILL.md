@@ -1,6 +1,6 @@
 ---
 name: reuse-first-authoring
-description: Discover and reuse existing project capabilities before creating React, React Native, or TypeScript components, hooks, helpers, services, or abstractions. Use before non-trivial implementation or refactoring when work may overlap project UI primitives, app wrappers, domain components, hooks, utilities, generated clients, or established workflow patterns, and use again during final review to justify every new abstraction.
+description: Discover and reuse existing project capabilities before creating TypeScript components, hooks, helpers, services, or other abstractions, in any framework. Use before non-trivial implementation or refactoring when work may overlap project UI primitives, app wrappers, domain components, hooks, utilities, generated clients, or established workflow patterns, and use again during final review to justify every new abstraction.
 ---
 
 # Reuse-First Authoring
@@ -11,9 +11,9 @@ Optimize for the smallest understandable change surface. Reuse behavior and owne
 
 1. Identify each responsibility the change needs: visual primitive, interaction, data access, state ownership, validation, formatting, navigation, or domain policy.
 2. Read repository instructions and any project capability catalog.
-3. Search for existing exports and nearby implementations that own each responsibility.
-4. Inspect the implementation or public contract of each serious candidate.
-5. Inspect at least one representative usage to learn intended variants, state handling, accessibility, and composition.
+3. Find the nearest compatible implementation and trace its callers: who loads and narrows data, owns state, validates, submits, and handles failure.
+4. Inspect candidate contracts and representative usage, including variants, lifecycle, accessibility, and composition.
+5. Establish which ownership pattern fits and which requirement demands a departure. Reusing primitives alone does not establish a compatible workflow.
 
 Directory listings and name matches are leads, not completed discovery.
 
@@ -30,54 +30,37 @@ Do not bypass a project wrapper to use the lower-level primitive it owns. Do not
 
 ## Record the reuse decision
 
-Before the first write on a non-trivial change, produce a short reuse map in a reviewer-visible plan, work log, PR summary, or final handoff:
+Before implementation, briefly identify the exemplar, selected owners, and concrete gaps in the existing plan or reuse map; use a short response if neither exists. This skill adds no separate checklist or receipt.
 
-| Need | Candidate and usage inspected | Decision | Reason |
-| --- | --- | --- | --- |
-| Semantic responsibility | Existing export plus representative caller | `reuse`, `extend`, `feature-local`, or `shared` | Contract match or concrete gap |
+For each proposed abstraction, compare direct composition and extension of the existing boundary. Extract only when the new boundary improves coherence enough to justify its indirection.
 
-For every new abstraction:
-
-- list the relevant candidates considered;
-- name the semantic, behavioral, lifecycle, accessibility, or ownership gap;
-- prefer feature-local scope unless multiple real consumers share the contract;
-- explain why extending the canonical boundary would make it less coherent.
+A reuse map is a hypothesis, not approval to create its listed files. If implementation exposes a simpler shape or incompatible contract, revise the decision and record the departure and evidence. Preserve the distinction between the original plan and what changed.
 
 A small visual difference is normally a reason to use a supported variant or extend the canonical component, not create a parallel implementation.
 
-If the workflow has no persistent plan or work log, include the compact reuse map in the final handoff so the decision can be reviewed.
-
 ## Choose the code shape
 
-Keep code together when it changes together and extraction would add navigation without creating a meaningful boundary.
-
-Extract locally when a responsibility has an independent name, lifecycle, dependency boundary, test boundary, or reason to change.
+Keep code together when it changes together. A name, file-size target, or ability to unit-test a helper alone does not establish an independent responsibility.
 
 Promote code to shared infrastructure only when consumers share semantics and ownership. Similar markup or hypothetical future reuse is insufficient.
 
-Treat line count as a review signal. Do not split mechanically to satisfy a target, and do not move a large coordinator into a screen-specific mega-hook.
+Resolve initial data once at its owning boundary and pass the narrowed result onward. Keep revalidation when time, authority, or inputs can change, such as submission against refreshed data.
+
+Preserve generated types through internal helpers; narrow the actual uncertainty. Validate genuinely untrusted data at its entry boundary using established validators where available. A partial predicate must not claim fields it has not established.
+
+Keep necessary domain mappings, safety checks, and distinct lifetimes. Simplification must preserve behavior; unrelated features need not share a mapper or coordinator.
 
 ## Apply enforcement at the right level
 
-Use deterministic project checks for stable, mechanically decidable boundaries such as:
-
-- canonical component imports and prohibited raw primitives;
-- generated clients and generated-file ownership;
-- semantic theme tokens and styling escape hatches;
-- package or layer import boundaries;
-- verified public export paths.
+Use existing deterministic checks for imports, generated-file ownership, theme tokens, and package boundaries. Keep configured coverage requirements; passing them does not establish a good design.
 
 Use contextual review for domain-level reuse where semantic equivalence cannot be proven statically. Do not force unrelated workflows through one abstraction to satisfy a reuse metric.
 
-When the repository provides a readiness schema, preparation receipt, scaffold, or changed-file gate, use it. Treat a receipt as evidence that discovery ran only when it also records or validates the selected reuse decisions.
-
 ## Verify after implementation
 
-1. Re-read the diff and list new files, exports, components, hooks, helpers, and direct primitive imports.
-2. Confirm each selected boundary is actually imported or composed where planned.
-3. Confirm every new abstraction still has the stated gap and the narrowest appropriate scope.
-4. Run the repository's targeted checks, tests, and canonical-boundary rules.
-5. Exercise behavior-bearing states. For visible UI, use the project's visual or device-verification workflow when available.
-6. Report any intentional reuse exception and its residual maintenance cost.
+Use the required review pass, not an additional review cycle:
 
-Do not claim reuse merely because a candidate appeared in discovery. The implementation and verification must close the loop.
+1. Trace the changed behavior across callers, hooks, and helpers. Challenge duplicated resolution, validation, state, and failure handling against the exemplar.
+2. Reconsider each new abstraction against simpler composition and its actual consumers. Imports and map rows are not proof of reuse.
+3. Run targeted repository checks and tests for meaningful behavior and required invariants. For visible UI, use the project's visual or device-verification workflow when available.
+4. Report substantive departures and remaining maintenance cost in the existing handoff. This skill adds no audit artifact or per-helper test-file requirement.

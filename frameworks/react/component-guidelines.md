@@ -136,6 +136,17 @@ Follow these constraints:
 - Return a contract shaped for the consumer rather than leaking an entire lower-level object without need.
 - Do not use a hook for pure logic that is clearer as a function.
 
+## Render and State Ownership
+
+These recur in strict reviews of agent-written UI. Each links to a worked example in the [React casebook](./casebook.md) or the core [review casebook](../../review/review-casebook.md).
+
+- **Subscribe at the leaf.** The component that renders a piece of form or selection state subscribes to it. A submit button gets the form handle and subscribes to the fields it needs; the screen does not hold that state in `useState` and pass it down. Extracting the JSX without moving the subscription changes nothing. ([R5](./casebook.md#r5-the-submit-button-owns-its-form-subscription))
+- **Render the layout before the data.** The screen layout is the outermost element; each data-dependent region has its own loading boundary, so the page has its shape while it loads. ([R6](./casebook.md#r6-layout-loading-and-entry-routes-in-react))
+- **Spacing belongs to the parent.** An exported component carries no outer margin or wrapping spacer; the place of use adds it, where it is visible. ([core 5.2](../../review/review-casebook.md#52-spacing-belongs-to-the-parent))
+- **Choose elements, not component types, during render.** Pick a variant with an exhaustive `switch` in its own component or a conditional element. Never create a component type in the render body; select one only from a module-scope map, whose identity is stable. ([R3](./casebook.md#r3-never-create-a-component-during-render), [R4](./casebook.md#r4-one-variant-is-rendered-by-an-exhaustive-switch-not-a-map-built-in-render))
+- **Keep effects small.** An effect is a guard, a call to a named function, and a cleanup; its condition is a named value computed above it. ([R1](./casebook.md#r1-an-effects-condition-lives-above-the-effect), [R2](./casebook.md#r2-effects-stay-small-cancellation-belongs-to-one-run))
+- **Declare routes statically.** Backend state chooses the entry route, not which routes exist. ([core 5.5](../../review/review-casebook.md#55-routes-are-declared-statically))
+
 ## Memoization
 
 Do not add `useMemo`, `useCallback`, or component memoization by default.
@@ -169,5 +180,6 @@ Avoid tests that only prove a vendor component renders or mirror implementation 
 - Does each extraction clarify a responsibility rather than merely reduce line count?
 - Is private single-use code kept distinct from a shared API?
 - Are screens, components, and hooks cohesive rather than artificially thin or fat?
+- Does state live in the component that renders it, and does the layout render before its data?
 - Is each memoization choice justified?
 - Are risky behaviors covered by focused tests, or is the verification gap reported?

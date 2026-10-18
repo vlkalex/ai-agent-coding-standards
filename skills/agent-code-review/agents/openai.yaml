@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Code Review"
+  short_description: "Review changes the way strict human reviewers do"
+  default_prompt: "Use $agent-code-review to review these changes before requesting human review."

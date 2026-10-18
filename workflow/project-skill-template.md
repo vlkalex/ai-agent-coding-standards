@@ -31,7 +31,7 @@ The exact metadata format depends on the agent platform. When the platform suppo
 ---
 name: application-ui-authoring
 description: |
-  Author and review React UI for the application package.
+  Author and review UI for the application package.
   Use when creating, replacing, or substantially changing its screens,
   components, hooks, or interaction behavior.
 ---
@@ -47,7 +47,7 @@ preserves behavior and accessibility, and introduces no unjustified shared API.
 
 ## Required sources
 
-- Read the shared component guideline before authoring UI.
+- Read the project's component guideline before authoring UI.
 - Inspect the affected package's configuration and nearby code.
 - Load the API-boundary reference only if the change touches remote data.
 

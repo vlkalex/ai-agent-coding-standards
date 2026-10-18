@@ -111,7 +111,7 @@ The target file should remain useful after common paths or implementations chang
 
 ## Maintenance
 
-- Add guidance after a repeated or high-impact failure, not for every personal preference.
+- Add guidance after a repeated or high-impact failure, not for every personal preference. Recurring review comments are the best source; [mining-review-feedback.md](../workflow/mining-review-feedback.md) turns them into tiered rules, and the few that apply repository-wide can sit here as short guardrails, each with a one-line before/after.
 - Keep the root file short enough to scan in one pass; use relevance, not an arbitrary line count, as the test.
 - Verify linked paths and commands when tooling changes.
 - Remove duplicated or stale rules when a skill, check, or configuration becomes the source of truth.
